@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Assistant Téléphonique — Démo Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;
+  --cream:#f5f2e8;
+  --gold:#b8952a;
+  --gold-l:#d4b24e;
+  --gold-dim:rgba(184,149,42,0.15);
+  --dim:#4a4740;
+  --dim2:#2a2824;
+  --border:rgba(184,149,42,0.18);
+  --r:0px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Work Sans',sans-serif;
+  background:var(--bg);
+  color:var(--cream);
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* ── CANVAS ONDES (fond global) ── */
+#waves-canvas{
+  position:fixed;top:0;left:0;
+  width:100%;height:100%;
+  pointer-events:none;
+  z-index:0;
+  opacity:0.35;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.4rem 3rem;
+  border-bottom:1px solid var(--border);
+  background:rgba(13,13,13,0.92);
+  backdrop-filter:blur(16px);
+}
+.logo{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:1.15rem;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--cream);
+}
+.logo span{color:var(--gold)}
+.nav-links{display:flex;gap:2.5rem}
+.nav-links a{
+  font-size:0.75rem;font-weight:400;letter-spacing:0.08em;
+  text-transform:uppercase;color:var(--dim);
+  text-decoration:none;transition:color .2s;
+}
+.nav-links a:hover{color:var(--cream)}
+.nav-btn{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;
+  background:transparent;color:var(--gold);
+  border:1px solid var(--gold);
+  padding:.55rem 1.4rem;text-decoration:none;
+  transition:background .2s,color .2s;
+}
+.nav-btn:hover{background:var(--gold);color:var(--bg)}
+
+/* ── SECTIONS ── */
+section,div.section{position:relative;z-index:1}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  padding:10rem 3rem 5rem 3rem;
+  position:relative;
+  overflow:hidden;
+}
+.hero-inner{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4rem;align-items:center;
+  max-width:1300px;margin:0 auto;width:100%;
+}
+.hero-tag{
+  font-family:'DM Mono',monospace;
+  font-size:0.72rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:1.8rem;
+  display:flex;align-items:center;gap:.8rem;
+}
+.hero-tag::before{
+  content:'';width:28px;height:1px;background:var(--gold);
+}
+.hero h1{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;
+  font-size:clamp(4rem,8vw,7rem);
+  line-height:.92;
+  letter-spacing:-.01em;
+  text-transform:uppercase;
+  margin-bottom:2rem;
+}
+.hero h1 em{
+  font-style:normal;
+  color:var(--gold);
+  display:block;
+}
+.hero-desc{
+  font-size:1rem;font-weight:300;
+  color:rgba(245,242,232,.55);
+  max-width:420px;margin-bottom:2.8rem;
+  line-height:1.75;
+}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.btn-gold{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--gold);color:var(--bg);
+  padding:.8rem 2rem;border:none;cursor:pointer;
+  text-decoration:none;
+  transition:opacity .2s,transform .2s;
+  display:inline-flex;align-items:center;gap:.6rem;
+}
+.btn-gold:hover{opacity:.85;transform:translateY(-2px)}
+.btn-ghost{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;
+  background:transparent;color:var(--cream);
+  border:1px solid var(--border);
+  padding:.8rem 2rem;cursor:pointer;
+  text-decoration:none;
+  transition:border-color .2s,transform .2s;
+  display:inline-flex;align-items:center;gap:.6rem;
+}
+.btn-ghost:hover{border-color:var(--gold);transform:translateY(-2px)}
+.hero-note{
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;letter-spacing:.08em;color:var(--dim);
+}
+
+/* Metrics côté droit */
+.hero-metrics{
+  display:flex;flex-direction:column;gap:0;
+}
+.metric-row{
+  padding:2rem 0;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:baseline;gap:1.2rem;
+}
+.metric-row:first-child{border-top:1px solid var(--border)}
+.metric-num{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:3.5rem;
+  line-height:1;color:var(--gold);
+  min-width:130px;
+}
+.metric-label{
+  font-size:.78rem;font-weight:300;letter-spacing:.06em;
+  color:rgba(245,242,232,.5);
+  text-transform:uppercase;
+  line-height:1.4;
+}
+
+/* ── DIVIDERS ── */
+.h-line{
+  border:none;border-top:1px solid var(--border);
+  margin:0;position:relative;z-index:1;
+}
+
+/* ── DEMO SECTION ── */
+.demo-section{
+  max-width:1300px;margin:0 auto;
+  padding:6rem 3rem;
+  position:relative;z-index:1;
+}
+.section-header{margin-bottom:3.5rem}
+.section-num{
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;letter-spacing:.15em;color:var(--gold);
+  margin-bottom:.6rem;
+}
+.section-title{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:clamp(2.5rem,5vw,4rem);
+  line-height:.95;text-transform:uppercase;
+  letter-spacing:-.01em;
+  margin-bottom:.8rem;
+}
+.section-sub{
+  font-size:.9rem;font-weight:300;
+  color:rgba(245,242,232,.5);
+  max-width:460px;line-height:1.7;
+}
+.demo-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2px;
+}
+.demo-panel{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  padding:2.5rem;
+}
+.panel-label{
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.5rem;
+  display:flex;align-items:center;gap:.6rem;
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gold);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.panel-desc{
+  font-size:.82rem;font-weight:300;
+  color:rgba(245,242,232,.45);
+  margin-bottom:2rem;line-height:1.6;
+}
+.widget-area{
+  display:flex;justify-content:center;align-items:center;
+  min-height:140px;
+}
+elevenlabs-convai{--convai-button-color:#b8952a}
+.calendar-frame{
+  width:100%;height:400px;
+  border:none;display:block;
+  filter:invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.8);
+  border-radius:0;
+}
+.calendar-placeholder{
+  height:400px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:1rem;text-align:center;
+  border:1px dashed var(--border);
+  padding:2rem;
+}
+.cal-icon{font-size:2rem;opacity:.3}
+.cal-title{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:1rem;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--dim);
+}
+.cal-sub{font-size:.72rem;color:var(--dim);font-family:'DM Mono',monospace}
+.try-hint{
+  margin-top:1.5rem;
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;letter-spacing:.05em;
+  color:var(--dim);text-align:center;
+}
+.try-hint span{color:rgba(184,149,42,.7)}
+
+/* ── FONCTIONNALITÉS ── */
+.features-section{
+  max-width:1300px;margin:0 auto;
+  padding:6rem 3rem;
+  position:relative;z-index:1;
+}
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;margin-top:3.5rem;
+}
+.feat-card{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  padding:2rem 1.8rem;
+  transition:border-color .25s,background .25s;
+}
+.feat-card:hover{
+  border-color:rgba(184,149,42,.45);
+  background:rgba(184,149,42,.04);
+}
+.feat-num{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.12em;
+  color:var(--gold);margin-bottom:1rem;
+}
+.feat-title{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:1.3rem;
+  text-transform:uppercase;letter-spacing:.04em;
+  margin-bottom:.6rem;
+  line-height:1.1;
+}
+.feat-desc{
+  font-size:.82rem;font-weight:300;
+  color:rgba(245,242,232,.5);
+  line-height:1.65;
+}
+
+/* ── TARIFS ── */
+.pricing-section{
+  max-width:1300px;margin:0 auto;
+  padding:6rem 3rem;
+  position:relative;z-index:1;
+}
+.pricing-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;margin-top:3.5rem;
+}
+.price-card{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  padding:2.5rem 2rem;
+  position:relative;
+  transition:border-color .25s;
+}
+.price-card.featured{
+  border-color:var(--gold);
+  background:rgba(184,149,42,.05);
+}
+.price-badge{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);
+  position:absolute;top:-1px;left:2rem;
+  background:var(--bg);padding:0 .8rem;
+  border-bottom:none;
+}
+.price-plan{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:1.2rem;
+}
+.price-amount{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;font-size:4rem;line-height:1;
+  margin-bottom:.2rem;
+}
+.price-period{font-size:.8rem;font-weight:300;color:var(--dim)}
+.price-tagline{
+  font-size:.82rem;font-weight:300;
+  color:rgba(245,242,232,.45);
+  margin-bottom:1.8rem;line-height:1.6;
+}
+.price-divider{border:none;border-top:1px solid var(--border);margin-bottom:1.8rem}
+.price-features{
+  list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:2.2rem;
+}
+.price-features li{
+  font-size:.82rem;font-weight:300;
+  color:rgba(245,242,232,.65);
+  display:flex;gap:.7rem;align-items:flex-start;
+  padding-bottom:.75rem;
+  border-bottom:1px solid rgba(184,149,42,.08);
+}
+.price-features li::before{
+  content:'→';color:var(--gold);font-size:.75rem;
+  flex-shrink:0;margin-top:.05rem;
+}
+.btn-outline{
+  width:100%;padding:.8rem;
+  background:transparent;color:var(--cream);
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid var(--border);cursor:pointer;
+  text-decoration:none;display:block;text-align:center;
+  transition:border-color .2s,color .2s;
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-gold-full{
+  width:100%;padding:.8rem;
+  background:var(--gold);color:var(--bg);
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  border:none;cursor:pointer;
+  text-decoration:none;display:block;text-align:center;
+  transition:opacity .2s;
+}
+.btn-gold-full:hover{opacity:.85}
+
+/* ── CONTACT ── */
+.contact-section{
+  max-width:1300px;margin:0 auto;
+  padding:6rem 3rem;
+  position:relative;z-index:1;
+}
+.contact-inner{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6rem;align-items:start;
+}
+.contact-form{display:flex;flex-direction:column;gap:.8rem;margin-top:2rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-group label{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);
+}
+.form-group input,
+.form-group select,
+.form-group textarea{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  padding:.75rem 1rem;
+  color:var(--cream);
+  font-family:'Work Sans',sans-serif;font-size:.88rem;font-weight:300;
+  outline:none;
+  transition:border-color .2s;
+  border-radius:0;
+  appearance:none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{border-color:var(--gold)}
+.form-group select option{background:#1a1a17}
+.form-group textarea{resize:vertical;min-height:100px}
+.form-submit{
+  background:var(--gold);color:var(--bg);
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:.88rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:.9rem 2rem;border:none;cursor:pointer;
+  margin-top:.5rem;
+  transition:opacity .2s,transform .2s;
+  text-align:left;display:flex;justify-content:space-between;align-items:center;
+}
+.form-submit:hover{opacity:.85;transform:translateY(-1px)}
+#form-success{
+  display:none;
+  border:1px solid var(--gold);
+  padding:2rem;text-align:center;
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:1.2rem;
+  text-transform:uppercase;letter-spacing:.06em;
+  color:var(--gold);
+}
+.contact-aside{padding-top:2rem}
+.aside-block{
+  padding:1.8rem 0;
+  border-bottom:1px solid var(--border);
+}
+.aside-block:first-child{border-top:1px solid var(--border)}
+.aside-label{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:.5rem;
+}
+.aside-val{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:1.1rem;text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:2rem 3rem;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:1rem;
+  position:relative;z-index:1;
+}
+footer p{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:.08em;color:var(--dim);
+}
+footer a{color:var(--gold);text-decoration:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:1.2rem 1.5rem}
+  .nav-links{display:none}
+  .hero{padding:8rem 1.5rem 4rem}
+  .hero-inner,.demo-grid,.features-grid,.pricing-grid,.contact-inner{grid-template-columns:1fr}
+  .demo-section,.features-section,.pricing-section,.contact-section{padding:4rem 1.5rem}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Canvas ondes de fond -->
+<canvas id="waves-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">assistant<span>téléphonique</span></div>
+  <div class="nav-links">
+    <a href="#demo">Démo</a>
+    <a href="#fonctionnalites">Fonctionnalités</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#contact" class="nav-btn">Demander une démo</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">Démo interactive en direct</div>
+      <h1>Votre téléphone répond,<em>même sans vous.</em></h1>
+      <p class="hero-desc">Un assistant vocal intelligent qui prend les rendez-vous, gère les urgences et capture chaque client — pendant que vous êtes sur le terrain.</p>
+      <div class="hero-actions">
+        <a href="#demo" class="btn-gold">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.22 1.18 2 2 0 012.22 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.06 6.06l1.27-1.56a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+          Appeler Sophie
+        </a>
+        <a href="#tarifs" class="btn-ghost">Voir les tarifs →</a>
+      </div>
+      <p class="hero-note">Appel gratuit · Aucune installation · Résultats immédiats</p>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric-row">
+        <div class="metric-num">24/7</div>
+        <div class="metric-label">Disponibilité<br/>totale</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-num">8–12</div>
+        <div class="metric-label">Appels manqués<br/>par jour en moyenne</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-num">48h</div>
+        <div class="metric-label">Délai de<br/>déploiement</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-num">0€</div>
+        <div class="metric-label">Frais de<br/>mise en place</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="h-line"/>
+
+<!-- DEMO -->
+<div id="demo" class="demo-section">
+  <div class="section-header">
+    <div class="section-num">— 01</div>
+    <div class="section-title">Testez Sophie<br/>en direct</div>
+    <p class="section-sub">Appelez Sophie maintenant. Elle prend votre message et ajoute un rendez-vous dans le calendrier en temps réel.</p>
+  </div>
+  <div class="demo-grid">
+    <div class="demo-panel">
+      <div class="panel-label"><div class="live-dot"></div>Sophie — En ligne</div>
+      <p class="panel-desc">Cliquez pour parler à Sophie. Demandez un rendez-vous, signalez une urgence, ou posez une question.</p>
+      <div class="widget-area">
+        <elevenlabs-convai agent-id="agent_8701kp8gm1djf0dvn1ar278jj9m1"></elevenlabs-convai>
+      </div>
+      <p class="try-hint">Essayez : <span>"Bonjour, j'ai une fuite d'eau urgente"</span></p>
+    </div>
+    <div class="demo-panel">
+      <div class="panel-label"><div class="live-dot" style="background:#4caf50"></div>Agenda — Temps réel</div>
+      <p class="panel-desc">Chaque rendez-vous pris par Sophie apparaît ici automatiquement.</p>
+      <!--
+        ══════════════════════════════════════════════════════════
+        REMPLACEZ LE BLOC ci-dessous par votre iframe une fois le
+        calendrier Google rendu public. Exemple :
+
+        <iframe class="calendar-frame"
+          src="https://calendar.google.com/calendar/embed?src=VOTRE_ID%40gmail.com&ctz=Europe%2FParis&mode=AGENDA&showTitle=0&showNav=1&showPrint=0&showTabs=0&showCalendars=0">
+        </iframe>
+        ══════════════════════════════════════════════════════════
+      -->
+      <div class="calendar-placeholder">
+        <div class="cal-icon">◎</div>
+        <div class="cal-title">Agenda en attente</div>
+        <div class="cal-sub">Envoyez l'URL de votre<br/>calendrier public pour activer</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="h-line"/>
+
+<!-- FONCTIONNALITÉS -->
+<div id="fonctionnalites" class="features-section">
+  <div class="section-header">
+    <div class="section-num">— 02</div>
+    <div class="section-title">9 fonctionnalités<br/>concrètes</div>
+    <p class="section-sub">Chacune répond à un problème réel rencontré quotidiennement par les artisans et PME.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-num">01</div>
+      <div class="feat-title">Accueil &amp; Qualification</div>
+      <p class="feat-desc">Répond en votre nom, identifie le motif et le niveau d'urgence dès les premières secondes.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">02</div>
+      <div class="feat-title">Collecte client</div>
+      <p class="feat-desc">Nom, téléphone confirmé à l'oral, adresse, nature exacte de la demande. Rien ne se perd.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">03</div>
+      <div class="feat-title">Gestion des urgences</div>
+      <p class="feat-desc">Détecte les situations critiques, donne les consignes de sécurité et alerte en priorité absolue.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">04</div>
+      <div class="feat-title">Prise de rendez-vous</div>
+      <p class="feat-desc">Propose des créneaux, confirme à l'oral et crée l'événement automatiquement dans Google Calendar.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">05</div>
+      <div class="feat-title">Compte-rendu auto</div>
+      <p class="feat-desc">Chaque appel génère une fiche structurée sauvegardée dans Google Drive. Zéro saisie manuelle.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">06</div>
+      <div class="feat-title">FAQ intelligente</div>
+      <p class="feat-desc">Répond aux questions courantes : zones d'intervention, tarifs indicatifs, délais, disponibilités week-end.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">07</div>
+      <div class="feat-title">Suivi clients</div>
+      <p class="feat-desc">Gère les demandes de suivi de chantier et les réclamations avec la même rigueur professionnelle.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">08</div>
+      <div class="feat-title">Filtre anti-démarcheurs</div>
+      <p class="feat-desc">Identifie et écarte poliment les appels commerciaux. Votre temps n'est consacré qu'à vos vrais clients.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">09</div>
+      <div class="feat-title">Clôture pro</div>
+      <p class="feat-desc">Récapitulatif systématique, engagement sur la suite. Vos clients raccrochent rassurés et confiants.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="h-line"/>
+
+<!-- TARIFS -->
+<div id="tarifs" class="pricing-section">
+  <div class="section-header">
+    <div class="section-num">— 03</div>
+    <div class="section-title">Un investissement<br/>qui se rembourse</div>
+    <p class="section-sub">Sans engagement · Déploiement en 48h · Support inclus. Un chantier manqué coûte plus cher.</p>
+  </div>
+  <div class="pricing-grid">
+
+    <div class="price-card">
+      <div class="price-plan">Essentiel</div>
+      <div class="price-amount">149€</div>
+      <div class="price-period">par mois</div>
+      <p class="price-tagline">Pour démarrer et ne plus jamais rater un appel client.</p>
+      <hr class="price-divider"/>
+      <ul class="price-features">
+        <li>Réception d'appels 24h/24, 7j/7</li>
+        <li>Accueil personnalisé à votre nom</li>
+        <li>Prise de messages structurés</li>
+        <li>Qualification urgence / non-urgence</li>
+        <li>Filtrage des démarcheurs</li>
+        <li>Compte-rendu par email</li>
+      </ul>
+      <a href="#contact" class="btn-outline">Commencer →</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="price-badge">Le plus populaire</div>
+      <div class="price-plan">Pro</div>
+      <div class="price-amount">199€</div>
+      <div class="price-period">par mois</div>
+      <p class="price-tagline">La solution complète pour tout automatiser.</p>
+      <hr class="price-divider"/>
+      <ul class="price-features">
+        <li>Tout le plan Essentiel</li>
+        <li>Prise de RDV automatique</li>
+        <li>Synchronisation Google Calendar</li>
+        <li>Consignes de sécurité urgences</li>
+        <li>Fiches dans Google Drive</li>
+        <li>Rappels auto email + notification</li>
+      </ul>
+      <a href="#contact" class="btn-gold-full">Commencer →</a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-plan">Premium</div>
+      <div class="price-amount">299€</div>
+      <div class="price-period">par mois</div>
+      <p class="price-tagline">Pour les PME qui veulent une intégration totale.</p>
+      <hr class="price-divider"/>
+      <ul class="price-features">
+        <li>Tout le plan Pro</li>
+        <li>Intégration CRM sur mesure</li>
+        <li>SMS de confirmation client</li>
+        <li>Rapports hebdo d'activité</li>
+        <li>Personnalisation avancée du script</li>
+        <li>Support prioritaire dédié</li>
+      </ul>
+      <a href="#contact" class="btn-outline">Commencer →</a>
+    </div>
+  </div>
+</div>
+
+<hr class="h-line"/>
+
+<!-- CONTACT -->
+<div id="contact" class="contact-section">
+  <div class="contact-inner">
+    <div>
+      <div class="section-num">— 04</div>
+      <div class="section-title">Prêt à ne plus<br/>rater un appel ?</div>
+      <p class="section-sub" style="margin-top:.8rem">Laissez vos coordonnées. Nous vous contactons sous 24h pour une démo personnalisée gratuite.</p>
+      <div class="contact-aside">
+        <div class="aside-block">
+          <div class="aside-label">Déploiement</div>
+          <div class="aside-val">48 heures</div>
+        </div>
+        <div class="aside-block">
+          <div class="aside-label">Sans engagement</div>
+          <div class="aside-val">Résiliation à tout moment</div>
+        </div>
+        <div class="aside-block">
+          <div class="aside-label">Support</div>
+          <div class="aside-val">Inclus tous plans</div>
+        </div>
+        <div class="aside-block">
+          <div class="aside-label">Site</div>
+          <div class="aside-val"><a href="https://venusweb.fr" style="color:var(--gold)">venusweb.fr</a></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <form class="contact-form" id="contactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" placeholder="Jean" required/>
+          </div>
+          <div class="form-group">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" placeholder="Dupont" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="metier">Votre métier</label>
+          <select id="metier">
+            <option value="">— Sélectionnez votre activité</option>
+            <option>Plombier / Chauffagiste</option>
+            <option>Électricien</option>
+            <option>Menuisier / Charpentier</option>
+            <option>Peintre / Décorateur</option>
+            <option>Maçon / Carreleur</option>
+            <option>Serrurier</option>
+            <option>Paysagiste</option>
+            <option>Autre artisan</option>
+            <option>PME / Commerce</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="jean@entreprise.fr" required/>
+          </div>
+          <div class="form-group">
+            <label for="tel">Téléphone</label>
+            <input type="tel" id="tel" placeholder="06 12 34 56 78"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Parlez-nous de votre activité..."></textarea>
+        </div>
+        <button type="submit" class="form-submit">
+          <span>Demander ma démo gratuite</span>
+          <span>→</span>
+        </button>
+      </form>
+      <div id="form-success">Merci — nous vous contactons sous 24h.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>Assistant Téléphonique</strong> — <a href="https://venusweb.fr">venusweb.fr</a></p>
+  <p>Propulsé par ElevenLabs AI · Google Calendar · Google Drive</p>
+</footer>
+
+<script>
+/* ── Canvas ondes concentriques animées ── */
+(function(){
+  const canvas = document.getElementById('waves-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0;
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const GOLD = [184, 149, 42];
+  const cx = W * 0.18, cy = H * 0.5;
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    const now = t * 0.0008;
+
+    for(let i = 1; i <= 28; i++){
+      const r = i * 58 + Math.sin(now + i * 0.3) * 4;
+      const alpha = Math.max(0.01, 0.09 - i * 0.003 + Math.sin(now * 0.5 + i) * 0.01);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${GOLD[0]},${GOLD[1]},${GOLD[2]},${alpha})`;
+      ctx.lineWidth = i === 4 ? 1.5 : 0.5;
+      ctx.stroke();
+    }
+
+    // Arc accent
+    const rA = 220 + Math.sin(now * 0.4) * 8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rA, -0.6, Math.PI * 1.2);
+    ctx.strokeStyle = `rgba(${GOLD[0]},${GOLD[1]},${GOLD[2]},0.35)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Point central pulsant
+    const pr = 4 + Math.sin(now * 2) * 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${GOLD[0]},${GOLD[1]},${GOLD[2]},0.8)`;
+    ctx.fill();
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── Formulaire ── */
+document.getElementById('contactForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  this.style.display = 'none';
+  document.getElementById('form-success').style.display = 'block';
+});
+</script>
+</body>
+</html>
