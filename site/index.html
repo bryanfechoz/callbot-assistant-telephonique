@@ -3,7 +3,32 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Assistant Téléphonique — Démo Live</title>
+<meta name="description" content="Sophie, votre assistante téléphonique IA 24h/24 7j/7 — prend les rendez-vous, gère les urgences et capture chaque client pendant que vous êtes sur le terrain. Déploiement en 48h, sans engagement."/>
+<meta name="robots" content="index, follow"/>
+<meta name="theme-color" content="#0a0a08"/>
+
+<link rel="canonical" href="https://venusweb.fr/"/>
+
+<meta property="og:type" content="website"/>
+<meta property="og:locale" content="fr_FR"/>
+<meta property="og:url" content="https://venusweb.fr/"/>
+<meta property="og:title" content="Assistant Téléphonique IA — Ne ratez plus jamais un appel client"/>
+<meta property="og:description" content="Sophie répond à votre place 24h/24 : prise de rendez-vous automatique, gestion des urgences, compte-rendu instantané. Déploiement en 48h pour artisans et PME."/>
+<meta property="og:image" content="https://venusweb.fr/og-image.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:site_name" content="Assistant Téléphonique — venusweb.fr"/>
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Assistant Téléphonique IA — Ne ratez plus jamais un appel client"/>
+<meta name="twitter:description" content="Sophie répond à votre place 24h/24 : prise de rendez-vous automatique, gestion des urgences, compte-rendu instantané."/>
+<meta name="twitter:image" content="https://venusweb.fr/og-image.jpg"/>
+
+<title>Assistant Téléphonique IA — Sophie répond pour vous 24h/24 | venusweb.fr</title>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a08'/><text y='24' x='4' font-size='22'>📞</text></svg>"/>
+
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@300;400&display=swap"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
@@ -12,15 +37,16 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d0d0d;
+  --bg:#0a0a08;
+  --bg2:#111110;
   --cream:#f5f2e8;
   --gold:#b8952a;
   --gold-l:#d4b24e;
-  --gold-dim:rgba(184,149,42,0.15);
+  --gold-dim:rgba(184,149,42,0.1);
   --dim:#4a4740;
   --dim2:#2a2824;
-  --border:rgba(184,149,42,0.18);
-  --r:0px;
+  --border:rgba(184,149,42,0.14);
+  --border-strong:rgba(184,149,42,0.38);
 }
 html{scroll-behavior:smooth}
 body{
@@ -31,13 +57,24 @@ body{
   line-height:1.6;
 }
 
-/* ── CANVAS ONDES (fond global) ── */
+/* ── GRAIN TEXTURE ── */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  z-index:9998;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.028;
+  background-size:200px 200px;
+}
+
+/* ── CANVAS ONDES ── */
 #waves-canvas{
   position:fixed;top:0;left:0;
   width:100%;height:100%;
   pointer-events:none;
   z-index:0;
-  opacity:0.35;
+  opacity:0.28;
 }
 
 /* ── NAV ── */
@@ -45,71 +82,107 @@ nav{
   position:fixed;top:0;left:0;right:0;
   z-index:100;
   display:flex;align-items:center;justify-content:space-between;
-  padding:1.4rem 3rem;
-  border-bottom:1px solid var(--border);
-  background:rgba(13,13,13,0.92);
-  backdrop-filter:blur(16px);
+  padding:1.6rem 3rem;
+  border-bottom:1px solid transparent;
+  background:transparent;
+  transition:padding .4s cubic-bezier(.22,1,.36,1),
+             border-color .4s,
+             background .4s,
+             backdrop-filter .4s;
+}
+nav.scrolled{
+  padding:.95rem 3rem;
+  border-color:var(--border);
+  background:rgba(10,10,8,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
 }
 .logo{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:900;font-size:1.15rem;
-  letter-spacing:0.12em;text-transform:uppercase;
+  font-weight:900;font-size:1.1rem;
+  letter-spacing:0.14em;text-transform:uppercase;
   color:var(--cream);
 }
 .logo span{color:var(--gold)}
 .nav-links{display:flex;gap:2.5rem}
 .nav-links a{
-  font-size:0.75rem;font-weight:400;letter-spacing:0.08em;
+  font-size:0.71rem;font-weight:400;letter-spacing:0.1em;
   text-transform:uppercase;color:var(--dim);
   text-decoration:none;transition:color .2s;
 }
 .nav-links a:hover{color:var(--cream)}
 .nav-btn{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;
+  font-weight:700;font-size:0.71rem;letter-spacing:0.14em;text-transform:uppercase;
   background:transparent;color:var(--gold);
-  border:1px solid var(--gold);
-  padding:.55rem 1.4rem;text-decoration:none;
-  transition:background .2s,color .2s;
+  border:1px solid rgba(184,149,42,0.38);
+  padding:.52rem 1.4rem;text-decoration:none;
+  transition:background .2s,color .2s,border-color .2s;
+  position:relative;overflow:hidden;
 }
-.nav-btn:hover{background:var(--gold);color:var(--bg)}
-
-/* ── SECTIONS ── */
-section,div.section{position:relative;z-index:1}
+.nav-btn:hover{background:var(--gold);color:var(--bg);border-color:var(--gold)}
 
 /* ── HERO ── */
 .hero{
   min-height:100vh;
   display:flex;flex-direction:column;
   justify-content:center;
-  padding:10rem 3rem 5rem 3rem;
+  padding:10rem 3rem 6rem;
   position:relative;
   overflow:hidden;
+}
+.hero-glow{
+  position:absolute;
+  top:50%;left:6%;
+  transform:translate(-50%,-50%);
+  width:800px;height:800px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(184,149,42,0.065) 0%,transparent 68%);
+  pointer-events:none;
+  z-index:0;
+}
+.hero-ghost{
+  position:absolute;
+  right:-0.02em;
+  top:50%;
+  transform:translateY(-52%);
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;
+  font-size:clamp(10rem,20vw,18rem);
+  line-height:1;
+  color:transparent;
+  -webkit-text-stroke:1px rgba(184,149,42,0.06);
+  text-transform:uppercase;
+  pointer-events:none;
+  user-select:none;
+  letter-spacing:-0.02em;
+  z-index:0;
 }
 .hero-inner{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:4rem;align-items:center;
+  gap:5rem;align-items:center;
   max-width:1300px;margin:0 auto;width:100%;
+  position:relative;z-index:1;
 }
 .hero-tag{
   font-family:'DM Mono',monospace;
-  font-size:0.72rem;letter-spacing:0.15em;
+  font-size:0.68rem;letter-spacing:0.18em;
   text-transform:uppercase;color:var(--gold);
-  margin-bottom:1.8rem;
-  display:flex;align-items:center;gap:.8rem;
+  margin-bottom:2rem;
+  display:flex;align-items:center;gap:1rem;
 }
 .hero-tag::before{
-  content:'';width:28px;height:1px;background:var(--gold);
+  content:'';width:30px;height:1px;background:var(--gold);flex-shrink:0;
 }
 .hero h1{
   font-family:'Big Shoulders Display',sans-serif;
   font-weight:900;
-  font-size:clamp(4rem,8vw,7rem);
-  line-height:.92;
-  letter-spacing:-.01em;
+  font-size:clamp(4rem,7.5vw,7.2rem);
+  line-height:.9;
+  letter-spacing:-.02em;
   text-transform:uppercase;
-  margin-bottom:2rem;
+  margin-bottom:2.2rem;
 }
 .hero h1 em{
   font-style:normal;
@@ -117,59 +190,107 @@ section,div.section{position:relative;z-index:1}
   display:block;
 }
 .hero-desc{
-  font-size:1rem;font-weight:300;
-  color:rgba(245,242,232,.55);
-  max-width:420px;margin-bottom:2.8rem;
-  line-height:1.75;
+  font-size:.94rem;font-weight:300;
+  color:rgba(245,242,232,.48);
+  max-width:400px;margin-bottom:3rem;
+  line-height:1.8;
 }
-.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
 .btn-gold{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;
   background:var(--gold);color:var(--bg);
-  padding:.8rem 2rem;border:none;cursor:pointer;
+  padding:.88rem 2rem;border:none;cursor:pointer;
   text-decoration:none;
   transition:opacity .2s,transform .2s;
   display:inline-flex;align-items:center;gap:.6rem;
+  position:relative;overflow:hidden;
 }
-.btn-gold:hover{opacity:.85;transform:translateY(-2px)}
+.btn-gold:hover{opacity:.88;transform:translateY(-2px)}
 .btn-ghost{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;
   background:transparent;color:var(--cream);
   border:1px solid var(--border);
-  padding:.8rem 2rem;cursor:pointer;
+  padding:.88rem 2rem;cursor:pointer;
   text-decoration:none;
   transition:border-color .2s,transform .2s;
   display:inline-flex;align-items:center;gap:.6rem;
+  position:relative;overflow:hidden;
 }
 .btn-ghost:hover{border-color:var(--gold);transform:translateY(-2px)}
 .hero-note{
   font-family:'DM Mono',monospace;
-  font-size:.68rem;letter-spacing:.08em;color:var(--dim);
+  font-size:.64rem;letter-spacing:.1em;color:var(--dim);
 }
 
-/* Metrics côté droit */
+/* Metrics */
 .hero-metrics{
-  display:flex;flex-direction:column;gap:0;
+  display:flex;flex-direction:column;
+  border:1px solid var(--border);
+  position:relative;
+}
+.hero-metrics::before{
+  content:'';
+  position:absolute;top:-1px;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--gold) 0%,rgba(184,149,42,0.2) 60%,transparent 100%);
 }
 .metric-row{
-  padding:2rem 0;
+  padding:1.9rem 2rem;
   border-bottom:1px solid var(--border);
-  display:flex;align-items:baseline;gap:1.2rem;
+  display:flex;align-items:baseline;gap:1.4rem;
+  transition:background .25s;
 }
-.metric-row:first-child{border-top:1px solid var(--border)}
+.metric-row:last-child{border-bottom:none}
+.metric-row:hover{background:var(--gold-dim)}
 .metric-num{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:900;font-size:3.5rem;
+  font-weight:900;font-size:3.8rem;
   line-height:1;color:var(--gold);
   min-width:130px;
 }
 .metric-label{
-  font-size:.78rem;font-weight:300;letter-spacing:.06em;
-  color:rgba(245,242,232,.5);
+  font-size:.73rem;font-weight:300;letter-spacing:.08em;
+  color:rgba(245,242,232,.42);
   text-transform:uppercase;
-  line-height:1.4;
+  line-height:1.5;
+}
+
+/* ── TICKER ── */
+.ticker{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:.82rem 0;
+  overflow:hidden;
+  position:relative;z-index:1;
+  background:rgba(184,149,42,0.018);
+}
+.ticker-track{
+  display:flex;
+  width:max-content;
+  animation:ticker-scroll 40s linear infinite;
+}
+.ticker-item{
+  font-family:'DM Mono',monospace;
+  font-size:.63rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--dim);
+  padding:0 2.2rem;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.ticker-dot{
+  color:var(--gold);
+  font-size:.55rem;
+  flex-shrink:0;
+  align-self:center;
+  opacity:.6;
+}
+@keyframes ticker-scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
 }
 
 /* ── DIVIDERS ── */
@@ -178,56 +299,95 @@ section,div.section{position:relative;z-index:1}
   margin:0;position:relative;z-index:1;
 }
 
-/* ── DEMO SECTION ── */
-.demo-section{
-  max-width:1300px;margin:0 auto;
-  padding:6rem 3rem;
-  position:relative;z-index:1;
+/* ── SECTION WRAPPER (décoration numéros) ── */
+.section-wrap{position:relative;z-index:1;overflow:hidden}
+.section-bg-num{
+  position:absolute;
+  bottom:1.5rem;right:2.5rem;
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;
+  font-size:clamp(7rem,13vw,12rem);
+  line-height:1;
+  color:transparent;
+  -webkit-text-stroke:1px rgba(184,149,42,0.045);
+  pointer-events:none;
+  user-select:none;
+  letter-spacing:-0.03em;
+  z-index:0;
 }
-.section-header{margin-bottom:3.5rem}
+
+/* ── SECTION HEADER SHARED ── */
+.section-header{margin-bottom:4rem}
 .section-num{
   font-family:'DM Mono',monospace;
-  font-size:.68rem;letter-spacing:.15em;color:var(--gold);
-  margin-bottom:.6rem;
+  font-size:.63rem;letter-spacing:.2em;color:var(--gold);
+  margin-bottom:.9rem;
+  display:flex;align-items:center;gap:.9rem;
+}
+.section-num::after{
+  content:'';
+  width:60px;height:1px;
+  background:linear-gradient(90deg,rgba(184,149,42,0.4) 0%,transparent 100%);
 }
 .section-title{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:900;font-size:clamp(2.5rem,5vw,4rem);
-  line-height:.95;text-transform:uppercase;
-  letter-spacing:-.01em;
-  margin-bottom:.8rem;
+  font-weight:900;font-size:clamp(2.8rem,5vw,4.4rem);
+  line-height:.92;text-transform:uppercase;
+  letter-spacing:-.02em;
+  margin-bottom:1rem;
 }
 .section-sub{
-  font-size:.9rem;font-weight:300;
-  color:rgba(245,242,232,.5);
-  max-width:460px;line-height:1.7;
+  font-size:.87rem;font-weight:300;
+  color:rgba(245,242,232,.44);
+  max-width:440px;line-height:1.8;
+}
+
+/* ── DEMO SECTION ── */
+.demo-section{
+  max-width:1300px;margin:0 auto;
+  padding:8rem 3rem;
+  position:relative;z-index:1;
 }
 .demo-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:2px;
+  gap:1px;
+  background:var(--border);
 }
 .demo-panel{
-  background:rgba(255,255,255,.02);
-  border:1px solid var(--border);
-  padding:2.5rem;
+  background:var(--bg);
+  padding:3rem;
+  position:relative;
+  overflow:hidden;
+  transition:background .3s;
 }
+.demo-panel::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,var(--gold) 0%,rgba(184,149,42,0.2) 50%,transparent 100%);
+  opacity:0;
+  transition:opacity .35s;
+}
+.demo-panel:hover::before{opacity:1}
+.demo-panel:hover{background:rgba(184,149,42,0.022)}
 .panel-label{
   font-family:'DM Mono',monospace;
-  font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:.5rem;
-  display:flex;align-items:center;gap:.6rem;
+  font-size:.63rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.65rem;
+  display:flex;align-items:center;gap:.75rem;
 }
 .live-dot{
-  width:7px;height:7px;border-radius:50%;
+  width:6px;height:6px;border-radius:50%;
   background:var(--gold);
   animation:blink 2s infinite;
+  flex-shrink:0;
 }
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 .panel-desc{
-  font-size:.82rem;font-weight:300;
-  color:rgba(245,242,232,.45);
-  margin-bottom:2rem;line-height:1.6;
+  font-size:.79rem;font-weight:300;
+  color:rgba(245,242,232,.38);
+  margin-bottom:2.4rem;line-height:1.75;
 }
 .widget-area{
   display:flex;justify-content:center;align-items:center;
@@ -238,198 +398,238 @@ elevenlabs-convai{--convai-button-color:#b8952a}
   width:100%;height:400px;
   border:none;display:block;
   filter:invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.8);
-  border-radius:0;
 }
 .calendar-placeholder{
   height:400px;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  gap:1rem;text-align:center;
-  border:1px dashed var(--border);
+  gap:1.2rem;text-align:center;
+  border:1px dashed rgba(184,149,42,0.1);
   padding:2rem;
 }
-.cal-icon{font-size:2rem;opacity:.3}
+.cal-icon{font-size:1.8rem;opacity:.18}
 .cal-title{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:1rem;text-transform:uppercase;
-  letter-spacing:.08em;color:var(--dim);
+  font-weight:700;font-size:.92rem;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--dim);
 }
-.cal-sub{font-size:.72rem;color:var(--dim);font-family:'DM Mono',monospace}
+.cal-sub{font-size:.68rem;color:var(--dim);font-family:'DM Mono',monospace;line-height:1.65}
 .try-hint{
-  margin-top:1.5rem;
+  margin-top:2rem;
   font-family:'DM Mono',monospace;
-  font-size:.68rem;letter-spacing:.05em;
+  font-size:.64rem;letter-spacing:.06em;
   color:var(--dim);text-align:center;
 }
-.try-hint span{color:rgba(184,149,42,.7)}
+.try-hint span{color:rgba(184,149,42,.65)}
 
 /* ── FONCTIONNALITÉS ── */
 .features-section{
   max-width:1300px;margin:0 auto;
-  padding:6rem 3rem;
+  padding:8rem 3rem;
   position:relative;z-index:1;
 }
 .features-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:2px;margin-top:3.5rem;
+  gap:1px;margin-top:4rem;
+  background:var(--border);
 }
 .feat-card{
-  background:rgba(255,255,255,.02);
-  border:1px solid var(--border);
-  padding:2rem 1.8rem;
-  transition:border-color .25s,background .25s;
+  background:var(--bg);
+  padding:2.4rem 2.2rem;
+  position:relative;
+  overflow:hidden;
+  transition:background .28s;
 }
-.feat-card:hover{
-  border-color:rgba(184,149,42,.45);
-  background:rgba(184,149,42,.04);
+.feat-card::before{
+  content:'';
+  position:absolute;top:0;left:0;bottom:0;
+  width:2px;
+  background:linear-gradient(180deg,var(--gold) 0%,rgba(184,149,42,0.2) 100%);
+  opacity:0;
+  transition:opacity .3s;
 }
+.feat-card:hover{background:rgba(184,149,42,0.028)}
+.feat-card:hover::before{opacity:1}
 .feat-num{
-  font-family:'DM Mono',monospace;
-  font-size:.65rem;letter-spacing:.12em;
-  color:var(--gold);margin-bottom:1rem;
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:900;
+  font-size:2.8rem;
+  line-height:1;
+  color:rgba(184,149,42,0.14);
+  margin-bottom:1.3rem;
+  letter-spacing:-.01em;
+  transition:color .28s;
 }
+.feat-card:hover .feat-num{color:rgba(184,149,42,0.32)}
 .feat-title{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:1.3rem;
+  font-weight:700;font-size:1.18rem;
   text-transform:uppercase;letter-spacing:.04em;
-  margin-bottom:.6rem;
+  margin-bottom:.65rem;
   line-height:1.1;
 }
 .feat-desc{
-  font-size:.82rem;font-weight:300;
-  color:rgba(245,242,232,.5);
-  line-height:1.65;
+  font-size:.79rem;font-weight:300;
+  color:rgba(245,242,232,.44);
+  line-height:1.72;
 }
 
 /* ── TARIFS ── */
 .pricing-section{
   max-width:1300px;margin:0 auto;
-  padding:6rem 3rem;
+  padding:8rem 3rem;
   position:relative;z-index:1;
 }
 .pricing-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:2px;margin-top:3.5rem;
+  gap:1px;margin-top:4rem;
+  background:var(--border);
 }
 .price-card{
-  background:rgba(255,255,255,.02);
-  border:1px solid var(--border);
-  padding:2.5rem 2rem;
+  background:var(--bg);
+  padding:3rem 2.4rem;
   position:relative;
-  transition:border-color .25s;
+  overflow:hidden;
+  transition:background .28s;
 }
+.price-card:hover{background:rgba(184,149,42,0.02)}
 .price-card.featured{
-  border-color:var(--gold);
-  background:rgba(184,149,42,.05);
+  background:rgba(184,149,42,0.04);
+}
+.price-card.featured::after{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% -10%,rgba(184,149,42,0.12) 0%,transparent 65%);
+  pointer-events:none;
 }
 .price-badge{
   font-family:'DM Mono',monospace;
-  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--gold);
-  position:absolute;top:-1px;left:2rem;
-  background:var(--bg);padding:0 .8rem;
-  border-bottom:none;
+  font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--bg);
+  background:var(--gold);
+  padding:.28rem .85rem;
+  display:inline-block;
+  margin-bottom:1.8rem;
+  position:relative;z-index:1;
 }
 .price-plan{
   font-family:'DM Mono',monospace;
-  font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;
+  font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
   color:var(--dim);margin-bottom:1.2rem;
+  position:relative;z-index:1;
 }
 .price-amount{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:900;font-size:4rem;line-height:1;
-  margin-bottom:.2rem;
+  font-weight:900;font-size:4.8rem;line-height:1;
+  margin-bottom:.25rem;
+  letter-spacing:-.02em;
+  position:relative;z-index:1;
 }
-.price-period{font-size:.8rem;font-weight:300;color:var(--dim)}
+.price-period{font-size:.74rem;font-weight:300;color:var(--dim);position:relative;z-index:1}
 .price-tagline{
-  font-size:.82rem;font-weight:300;
-  color:rgba(245,242,232,.45);
-  margin-bottom:1.8rem;line-height:1.6;
+  font-size:.79rem;font-weight:300;
+  color:rgba(245,242,232,.4);
+  margin-bottom:2.2rem;line-height:1.7;
+  margin-top:.7rem;
+  position:relative;z-index:1;
 }
-.price-divider{border:none;border-top:1px solid var(--border);margin-bottom:1.8rem}
+.price-divider{
+  border:none;
+  border-top:1px solid var(--border);
+  margin-bottom:2.2rem;
+  position:relative;z-index:1;
+}
 .price-features{
-  list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:2.2rem;
+  list-style:none;display:flex;flex-direction:column;gap:0;
+  margin-bottom:2.6rem;
+  position:relative;z-index:1;
 }
 .price-features li{
-  font-size:.82rem;font-weight:300;
-  color:rgba(245,242,232,.65);
-  display:flex;gap:.7rem;align-items:flex-start;
-  padding-bottom:.75rem;
-  border-bottom:1px solid rgba(184,149,42,.08);
+  font-size:.79rem;font-weight:300;
+  color:rgba(245,242,232,.58);
+  display:flex;gap:.8rem;align-items:flex-start;
+  padding:.72rem 0;
+  border-bottom:1px solid rgba(184,149,42,0.07);
 }
+.price-features li:last-child{border-bottom:none}
 .price-features li::before{
-  content:'→';color:var(--gold);font-size:.75rem;
-  flex-shrink:0;margin-top:.05rem;
+  content:'→';color:var(--gold);font-size:.7rem;
+  flex-shrink:0;margin-top:.06rem;
 }
 .btn-outline{
-  width:100%;padding:.8rem;
+  width:100%;padding:.88rem;
   background:transparent;color:var(--cream);
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:700;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
   border:1px solid var(--border);cursor:pointer;
   text-decoration:none;display:block;text-align:center;
   transition:border-color .2s,color .2s;
+  position:relative;z-index:1;
 }
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 .btn-gold-full{
-  width:100%;padding:.8rem;
+  width:100%;padding:.88rem;
   background:var(--gold);color:var(--bg);
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:700;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
   border:none;cursor:pointer;
   text-decoration:none;display:block;text-align:center;
   transition:opacity .2s;
+  position:relative;z-index:1;
 }
-.btn-gold-full:hover{opacity:.85}
+.btn-gold-full:hover{opacity:.88}
 
 /* ── CONTACT ── */
 .contact-section{
   max-width:1300px;margin:0 auto;
-  padding:6rem 3rem;
+  padding:8rem 3rem;
   position:relative;z-index:1;
 }
 .contact-inner{
   display:grid;grid-template-columns:1fr 1fr;
-  gap:6rem;align-items:start;
+  gap:7rem;align-items:start;
 }
-.contact-form{display:flex;flex-direction:column;gap:.8rem;margin-top:2rem}
+.contact-form{display:flex;flex-direction:column;gap:.8rem;margin-top:2.4rem}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
-.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-group{display:flex;flex-direction:column;gap:.4rem}
 .form-group label{
   font-family:'DM Mono',monospace;
-  font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
   color:var(--dim);
 }
 .form-group input,
 .form-group select,
 .form-group textarea{
-  background:rgba(255,255,255,.03);
+  background:rgba(255,255,255,.022);
   border:1px solid var(--border);
-  padding:.75rem 1rem;
+  padding:.78rem 1rem;
   color:var(--cream);
-  font-family:'Work Sans',sans-serif;font-size:.88rem;font-weight:300;
+  font-family:'Work Sans',sans-serif;font-size:.86rem;font-weight:300;
   outline:none;
-  transition:border-color .2s;
+  transition:border-color .2s,background .2s;
   border-radius:0;
   appearance:none;
 }
 .form-group input:focus,
 .form-group select:focus,
-.form-group textarea:focus{border-color:var(--gold)}
-.form-group select option{background:#1a1a17}
+.form-group textarea:focus{
+  border-color:var(--gold);
+  background:rgba(184,149,42,0.04);
+}
+.form-group select option{background:#111110}
 .form-group textarea{resize:vertical;min-height:100px}
 .form-submit{
   background:var(--gold);color:var(--bg);
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:.88rem;letter-spacing:.12em;text-transform:uppercase;
-  padding:.9rem 2rem;border:none;cursor:pointer;
-  margin-top:.5rem;
+  font-weight:700;font-size:.86rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.92rem 2rem;border:none;cursor:pointer;
+  margin-top:.6rem;
   transition:opacity .2s,transform .2s;
   text-align:left;display:flex;justify-content:space-between;align-items:center;
 }
-.form-submit:hover{opacity:.85;transform:translateY(-1px)}
+.form-submit:hover{opacity:.88;transform:translateY(-1px)}
 #form-success{
   display:none;
   border:1px solid var(--gold);
@@ -439,56 +639,56 @@ elevenlabs-convai{--convai-button-color:#b8952a}
   text-transform:uppercase;letter-spacing:.06em;
   color:var(--gold);
 }
-.contact-aside{padding-top:2rem}
+.contact-aside{padding-top:2.6rem}
 .aside-block{
-  padding:1.8rem 0;
+  padding:1.6rem 0;
   border-bottom:1px solid var(--border);
 }
 .aside-block:first-child{border-top:1px solid var(--border)}
 .aside-label{
   font-family:'DM Mono',monospace;
-  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--dim);margin-bottom:.5rem;
+  font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:.45rem;
 }
 .aside-val{
   font-family:'Big Shoulders Display',sans-serif;
-  font-weight:700;font-size:1.1rem;text-transform:uppercase;
-  letter-spacing:.04em;
+  font-weight:700;font-size:1.05rem;text-transform:uppercase;
+  letter-spacing:.05em;
 }
 
 /* ── FOOTER ── */
 footer{
   border-top:1px solid var(--border);
-  padding:2rem 3rem;
+  padding:2.5rem 3rem;
   display:flex;justify-content:space-between;align-items:center;
   flex-wrap:wrap;gap:1rem;
   position:relative;z-index:1;
 }
+footer::before{
+  content:'';
+  position:absolute;top:-1px;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,var(--gold) 0%,rgba(184,149,42,0.15) 35%,transparent 65%);
+}
 footer p{
   font-family:'DM Mono',monospace;
-  font-size:.65rem;letter-spacing:.08em;color:var(--dim);
+  font-size:.62rem;letter-spacing:.09em;color:var(--dim);
 }
 footer a{color:var(--gold);text-decoration:none}
 
 /* ── SCROLL REVEAL ── */
 .reveal{
   opacity:0;
-  transform:translateY(32px);
-  transition:opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1);
+  transform:translateY(28px);
+  transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
 }
 .reveal.visible{opacity:1;transform:none}
-.reveal-delay-1{transition-delay:.08s}
-.reveal-delay-2{transition-delay:.16s}
-.reveal-delay-3{transition-delay:.24s}
-.reveal-delay-4{transition-delay:.32s}
-.reveal-delay-5{transition-delay:.40s}
-.reveal-delay-6{transition-delay:.48s}
-
-/* ── NAV SCROLL ── */
-nav.scrolled{
-  padding-top:.9rem;padding-bottom:.9rem;
-  background:rgba(13,13,13,0.98);
-}
+.reveal-delay-1{transition-delay:.06s}
+.reveal-delay-2{transition-delay:.12s}
+.reveal-delay-3{transition-delay:.18s}
+.reveal-delay-4{transition-delay:.24s}
+.reveal-delay-5{transition-delay:.30s}
+.reveal-delay-6{transition-delay:.36s}
 
 /* ── HAMBURGER ── */
 .hamburger{
@@ -508,7 +708,7 @@ nav.scrolled{
 .mobile-menu{
   display:none;
   position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(13,13,13,0.98);
+  background:rgba(10,10,8,0.98);
   z-index:99;
   flex-direction:column;
   align-items:center;justify-content:center;
@@ -524,22 +724,6 @@ nav.scrolled{
 }
 .mobile-menu a:hover{color:var(--gold)}
 
-/* ── METRIC COUNTER ── */
-.metric-num[data-target]{display:inline-block}
-
-/* ── CARD HOVER LIFT ── */
-.feat-card,.price-card,.demo-panel{
-  transition:border-color .25s, background .25s, transform .25s, box-shadow .25s;
-}
-.feat-card:hover,.demo-panel:hover{
-  transform:translateY(-4px);
-  box-shadow:0 12px 40px rgba(184,149,42,.08);
-}
-.price-card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 12px 40px rgba(184,149,42,.12);
-}
-
 /* ── BUTTON RIPPLE ── */
 .btn-gold,.btn-ghost,.btn-outline,.btn-gold-full,.nav-btn{
   position:relative;overflow:hidden;
@@ -547,36 +731,52 @@ nav.scrolled{
 .btn-gold::after,.btn-ghost::after,.btn-outline::after,.btn-gold-full::after,.nav-btn::after{
   content:'';
   position:absolute;inset:0;
-  background:rgba(255,255,255,.08);
+  background:rgba(255,255,255,.07);
   transform:scaleX(0);transform-origin:left;
-  transition:transform .35s cubic-bezier(.22,1,.36,1);
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
 }
 .btn-gold:hover::after,.btn-ghost:hover::after,.btn-outline:hover::after,.btn-gold-full:hover::after,.nav-btn:hover::after{
   transform:scaleX(1);
 }
 
+/* ── HOVER LIFT ── */
+.feat-card,.price-card,.demo-panel{
+  transition:background .28s,transform .28s,box-shadow .28s;
+}
+.feat-card:hover,.demo-panel:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 44px rgba(0,0,0,0.3),0 4px 14px rgba(184,149,42,0.06);
+}
+.price-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 44px rgba(0,0,0,0.3),0 4px 14px rgba(184,149,42,0.1);
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   nav{padding:1.2rem 1.5rem}
+  nav.scrolled{padding:.85rem 1.5rem}
   .nav-links{display:none}
   .hamburger{display:flex}
-  nav.scrolled{padding-top:.8rem;padding-bottom:.8rem}
-  .hero{padding:8rem 1.5rem 4rem}
-  .hero h1{font-size:clamp(3rem,12vw,5rem)}
+  .hero{padding:7rem 1.5rem 4rem}
+  .hero h1{font-size:clamp(3rem,11vw,5rem)}
+  .hero-ghost{display:none}
+  .hero-glow{display:none}
   .hero-inner,.demo-grid,.features-grid,.pricing-grid,.contact-inner{grid-template-columns:1fr}
-  .demo-section,.features-section,.pricing-section,.contact-section{padding:4rem 1.5rem}
+  .demo-section,.features-section,.pricing-section,.contact-section{padding:5rem 1.5rem}
   .form-row{grid-template-columns:1fr}
   .metric-num{font-size:2.8rem}
-  .section-title{font-size:clamp(2rem,8vw,3rem)}
+  .section-title{font-size:clamp(2.2rem,8vw,3.2rem)}
+  .section-bg-num{display:none}
+  .ticker{display:none}
+  footer{padding:2rem 1.5rem}
 }
 </style>
 </head>
 <body>
 
-<!-- Canvas ondes de fond -->
 <canvas id="waves-canvas"></canvas>
 
-<!-- Mobile menu -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#demo" onclick="closeMobile()">Démo</a>
   <a href="#fonctionnalites" onclick="closeMobile()">Fonctionnalités</a>
@@ -584,7 +784,6 @@ nav.scrolled{
   <a href="#contact" onclick="closeMobile()">Contact</a>
 </div>
 
-<!-- NAV -->
 <nav id="mainNav">
   <div class="logo">assistant<span>téléphonique</span></div>
   <div class="nav-links">
@@ -599,8 +798,9 @@ nav.scrolled{
   </button>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-ghost">SOPHIE</div>
   <div class="hero-inner">
     <div>
       <div class="hero-tag">Démo interactive en direct</div>
@@ -636,249 +836,267 @@ nav.scrolled{
   </div>
 </section>
 
-<hr class="h-line"/>
-
-<!-- DEMO -->
-<div id="demo" class="demo-section">
-  <div class="section-header">
-    <div class="section-num">— 01</div>
-    <div class="section-title">Testez Sophie<br/>en direct</div>
-    <p class="section-sub">Appelez Sophie maintenant. Elle prend votre message et ajoute un rendez-vous dans le calendrier en temps réel.</p>
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">Disponible 24h/24</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Déploiement en 48h</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Sans engagement</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Prise de RDV automatique</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Gestion des urgences</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Filtre anti-démarcheurs</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">0€ de mise en place</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Compte-rendu automatique</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Synchronisation Google Calendar</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Disponible 24h/24</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Déploiement en 48h</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Sans engagement</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Prise de RDV automatique</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Gestion des urgences</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Filtre anti-démarcheurs</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">0€ de mise en place</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Compte-rendu automatique</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Synchronisation Google Calendar</span><span class="ticker-dot">◆</span>
   </div>
-  <div class="demo-grid">
-    <div class="demo-panel">
-      <div class="panel-label"><div class="live-dot"></div>Sophie — En ligne</div>
-      <p class="panel-desc">Cliquez pour parler à Sophie. Demandez un rendez-vous, signalez une urgence, ou posez une question.</p>
-      <div class="widget-area">
-        <elevenlabs-convai agent-id="agent_8701kp8gm1djf0dvn1ar278jj9m1"></elevenlabs-convai>
+</div>
+
+<div class="section-wrap">
+  <div class="section-bg-num">01</div>
+  <div id="demo" class="demo-section">
+    <div class="section-header">
+      <div class="section-num">— 01</div>
+      <div class="section-title">Testez Sophie<br/>en direct</div>
+      <p class="section-sub">Appelez Sophie maintenant. Elle prend votre message et ajoute un rendez-vous dans le calendrier en temps réel.</p>
+    </div>
+    <div class="demo-grid">
+      <div class="demo-panel">
+        <div class="panel-label"><div class="live-dot"></div>Sophie — En ligne</div>
+        <p class="panel-desc">Cliquez pour parler à Sophie. Demandez un rendez-vous, signalez une urgence, ou posez une question.</p>
+        <div class="widget-area">
+          <elevenlabs-convai agent-id="agent_8701kp8gm1djf0dvn1ar278jj9m1"></elevenlabs-convai>
+        </div>
+        <p class="try-hint">Essayez : <span>"Bonjour, j'ai une fuite d'eau urgente"</span></p>
       </div>
-      <p class="try-hint">Essayez : <span>"Bonjour, j'ai une fuite d'eau urgente"</span></p>
-    </div>
-    <div class="demo-panel">
-      <div class="panel-label"><div class="live-dot" style="background:#4caf50"></div>Agenda — Temps réel</div>
-      <p class="panel-desc">Chaque rendez-vous pris par Sophie apparaît ici automatiquement.</p>
-      <!--
-        ══════════════════════════════════════════════════════════
-        REMPLACEZ LE BLOC ci-dessous par votre iframe une fois le
-        calendrier Google rendu public. Exemple :
-
-        <iframe class="calendar-frame"
-          src="https://calendar.google.com/calendar/embed?src=VOTRE_ID%40gmail.com&ctz=Europe%2FParis&mode=AGENDA&showTitle=0&showNav=1&showPrint=0&showTabs=0&showCalendars=0">
-        </iframe>
-        ══════════════════════════════════════════════════════════
-      -->
-      <div class="calendar-placeholder">
-        <div class="cal-icon">◎</div>
-        <div class="cal-title">Agenda en attente</div>
-        <div class="cal-sub">Envoyez l'URL de votre<br/>calendrier public pour activer</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<hr class="h-line"/>
-
-<!-- FONCTIONNALITÉS -->
-<div id="fonctionnalites" class="features-section">
-  <div class="section-header">
-    <div class="section-num">— 02</div>
-    <div class="section-title">9 fonctionnalités<br/>concrètes</div>
-    <p class="section-sub">Chacune répond à un problème réel rencontré quotidiennement par les artisans et PME.</p>
-  </div>
-  <div class="features-grid">
-    <div class="feat-card reveal reveal-delay-1">
-      <div class="feat-num">01</div>
-      <div class="feat-title">Accueil &amp; Qualification</div>
-      <p class="feat-desc">Répond en votre nom, identifie le motif et le niveau d'urgence dès les premières secondes.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-2">
-      <div class="feat-num">02</div>
-      <div class="feat-title">Collecte client</div>
-      <p class="feat-desc">Nom, téléphone confirmé à l'oral, adresse, nature exacte de la demande. Rien ne se perd.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-3">
-      <div class="feat-num">03</div>
-      <div class="feat-title">Gestion des urgences</div>
-      <p class="feat-desc">Détecte les situations critiques, donne les consignes de sécurité et alerte en priorité absolue.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-4">
-      <div class="feat-num">04</div>
-      <div class="feat-title">Prise de rendez-vous</div>
-      <p class="feat-desc">Propose des créneaux, confirme à l'oral et crée l'événement automatiquement dans Google Calendar.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-5">
-      <div class="feat-num">05</div>
-      <div class="feat-title">Compte-rendu auto</div>
-      <p class="feat-desc">Chaque appel génère une fiche structurée sauvegardée dans Google Drive. Zéro saisie manuelle.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-6">
-      <div class="feat-num">06</div>
-      <div class="feat-title">FAQ intelligente</div>
-      <p class="feat-desc">Répond aux questions courantes : zones d'intervention, tarifs indicatifs, délais, disponibilités week-end.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-1">
-      <div class="feat-num">07</div>
-      <div class="feat-title">Suivi clients</div>
-      <p class="feat-desc">Gère les demandes de suivi de chantier et les réclamations avec la même rigueur professionnelle.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-2">
-      <div class="feat-num">08</div>
-      <div class="feat-title">Filtre anti-démarcheurs</div>
-      <p class="feat-desc">Identifie et écarte poliment les appels commerciaux. Votre temps n'est consacré qu'à vos vrais clients.</p>
-    </div>
-    <div class="feat-card reveal reveal-delay-3">
-      <div class="feat-num">09</div>
-      <div class="feat-title">Clôture pro</div>
-      <p class="feat-desc">Récapitulatif systématique, engagement sur la suite. Vos clients raccrochent rassurés et confiants.</p>
-    </div>
-  </div>
-</div>
-
-<hr class="h-line"/>
-
-<!-- TARIFS -->
-<div id="tarifs" class="pricing-section">
-  <div class="section-header">
-    <div class="section-num">— 03</div>
-    <div class="section-title">Un investissement<br/>qui se rembourse</div>
-    <p class="section-sub">Sans engagement · Déploiement en 48h · Support inclus. Un chantier manqué coûte plus cher.</p>
-  </div>
-  <div class="pricing-grid">
-
-    <div class="price-card reveal reveal-delay-1">
-      <div class="price-plan">Essentiel</div>
-      <div class="price-amount">149€</div>
-      <div class="price-period">par mois</div>
-      <p class="price-tagline">Pour démarrer et ne plus jamais rater un appel client.</p>
-      <hr class="price-divider"/>
-      <ul class="price-features">
-        <li>Réception d'appels 24h/24, 7j/7</li>
-        <li>Accueil personnalisé à votre nom</li>
-        <li>Prise de messages structurés</li>
-        <li>Qualification urgence / non-urgence</li>
-        <li>Filtrage des démarcheurs</li>
-        <li>Compte-rendu par email</li>
-      </ul>
-      <a href="#contact" class="btn-outline">Commencer →</a>
-    </div>
-
-    <div class="price-card featured reveal reveal-delay-2">
-      <div class="price-badge">Le plus populaire</div>
-      <div class="price-plan">Pro</div>
-      <div class="price-amount">199€</div>
-      <div class="price-period">par mois</div>
-      <p class="price-tagline">La solution complète pour tout automatiser.</p>
-      <hr class="price-divider"/>
-      <ul class="price-features">
-        <li>Tout le plan Essentiel</li>
-        <li>Prise de RDV automatique</li>
-        <li>Synchronisation Google Calendar</li>
-        <li>Consignes de sécurité urgences</li>
-        <li>Fiches dans Google Drive</li>
-        <li>Rappels auto email + notification</li>
-      </ul>
-      <a href="#contact" class="btn-gold-full">Commencer →</a>
-    </div>
-
-    <div class="price-card reveal reveal-delay-3">
-      <div class="price-plan">Premium</div>
-      <div class="price-amount">299€</div>
-      <div class="price-period">par mois</div>
-      <p class="price-tagline">Pour les PME qui veulent une intégration totale.</p>
-      <hr class="price-divider"/>
-      <ul class="price-features">
-        <li>Tout le plan Pro</li>
-        <li>Intégration CRM sur mesure</li>
-        <li>SMS de confirmation client</li>
-        <li>Rapports hebdo d'activité</li>
-        <li>Personnalisation avancée du script</li>
-        <li>Support prioritaire dédié</li>
-      </ul>
-      <a href="#contact" class="btn-outline">Commencer →</a>
-    </div>
-  </div>
-</div>
-
-<hr class="h-line"/>
-
-<!-- CONTACT -->
-<div id="contact" class="contact-section">
-  <div class="contact-inner">
-    <div>
-      <div class="section-num">— 04</div>
-      <div class="section-title">Prêt à ne plus<br/>rater un appel ?</div>
-      <p class="section-sub" style="margin-top:.8rem">Laissez vos coordonnées. Nous vous contactons sous 24h pour une démo personnalisée gratuite.</p>
-      <div class="contact-aside">
-        <div class="aside-block">
-          <div class="aside-label">Déploiement</div>
-          <div class="aside-val">48 heures</div>
-        </div>
-        <div class="aside-block">
-          <div class="aside-label">Sans engagement</div>
-          <div class="aside-val">Résiliation à tout moment</div>
-        </div>
-        <div class="aside-block">
-          <div class="aside-label">Support</div>
-          <div class="aside-val">Inclus tous plans</div>
-        </div>
-        <div class="aside-block">
-          <div class="aside-label">Site</div>
-          <div class="aside-val"><a href="https://venusweb.fr" style="color:var(--gold)">venusweb.fr</a></div>
+      <div class="demo-panel">
+        <div class="panel-label"><div class="live-dot" style="background:#4caf50"></div>Agenda — Temps réel</div>
+        <p class="panel-desc">Chaque rendez-vous pris par Sophie apparaît ici automatiquement.</p>
+        <div class="calendar-placeholder">
+          <div class="cal-icon">◎</div>
+          <div class="cal-title">Agenda en attente</div>
+          <div class="cal-sub">Envoyez l'URL de votre<br/>calendrier public pour activer</div>
         </div>
       </div>
     </div>
-    <div>
-      <form class="contact-form" id="contactForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="prenom">Prénom</label>
-            <input type="text" id="prenom" placeholder="Jean" required/>
-          </div>
-          <div class="form-group">
-            <label for="nom">Nom</label>
-            <input type="text" id="nom" placeholder="Dupont" required/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="metier">Votre métier</label>
-          <select id="metier">
-            <option value="">— Sélectionnez votre activité</option>
-            <option>Plombier / Chauffagiste</option>
-            <option>Électricien</option>
-            <option>Menuisier / Charpentier</option>
-            <option>Peintre / Décorateur</option>
-            <option>Maçon / Carreleur</option>
-            <option>Serrurier</option>
-            <option>Paysagiste</option>
-            <option>Autre artisan</option>
-            <option>PME / Commerce</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="jean@entreprise.fr" required/>
-          </div>
-          <div class="form-group">
-            <label for="tel">Téléphone</label>
-            <input type="tel" id="tel" placeholder="06 12 34 56 78"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="message">Message</label>
-          <textarea id="message" placeholder="Parlez-nous de votre activité..."></textarea>
-        </div>
-        <button type="submit" class="form-submit">
-          <span>Demander ma démo gratuite</span>
-          <span>→</span>
-        </button>
-      </form>
-      <div id="form-success">Merci — nous vous contactons sous 24h.</div>
+  </div>
+</div>
+
+<hr class="h-line"/>
+
+<div class="section-wrap">
+  <div class="section-bg-num">02</div>
+  <div id="fonctionnalites" class="features-section">
+    <div class="section-header">
+      <div class="section-num">— 02</div>
+      <div class="section-title">9 fonctionnalités<br/>concrètes</div>
+      <p class="section-sub">Chacune répond à un problème réel rencontré quotidiennement par les artisans et PME.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal reveal-delay-1">
+        <div class="feat-num">01</div>
+        <div class="feat-title">Accueil &amp; Qualification</div>
+        <p class="feat-desc">Répond en votre nom, identifie le motif et le niveau d'urgence dès les premières secondes.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <div class="feat-num">02</div>
+        <div class="feat-title">Collecte client</div>
+        <p class="feat-desc">Nom, téléphone confirmé à l'oral, adresse, nature exacte de la demande. Rien ne se perd.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-3">
+        <div class="feat-num">03</div>
+        <div class="feat-title">Gestion des urgences</div>
+        <p class="feat-desc">Détecte les situations critiques, donne les consignes de sécurité et alerte en priorité absolue.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-4">
+        <div class="feat-num">04</div>
+        <div class="feat-title">Prise de rendez-vous</div>
+        <p class="feat-desc">Propose des créneaux, confirme à l'oral et crée l'événement automatiquement dans Google Calendar.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-5">
+        <div class="feat-num">05</div>
+        <div class="feat-title">Compte-rendu auto</div>
+        <p class="feat-desc">Chaque appel génère une fiche structurée sauvegardée dans Google Drive. Zéro saisie manuelle.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-6">
+        <div class="feat-num">06</div>
+        <div class="feat-title">FAQ intelligente</div>
+        <p class="feat-desc">Répond aux questions courantes : zones d'intervention, tarifs indicatifs, délais, disponibilités week-end.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1">
+        <div class="feat-num">07</div>
+        <div class="feat-title">Suivi clients</div>
+        <p class="feat-desc">Gère les demandes de suivi de chantier et les réclamations avec la même rigueur professionnelle.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <div class="feat-num">08</div>
+        <div class="feat-title">Filtre anti-démarcheurs</div>
+        <p class="feat-desc">Identifie et écarte poliment les appels commerciaux. Votre temps n'est consacré qu'à vos vrais clients.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-3">
+        <div class="feat-num">09</div>
+        <div class="feat-title">Clôture pro</div>
+        <p class="feat-desc">Récapitulatif systématique, engagement sur la suite. Vos clients raccrochent rassurés et confiants.</p>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FOOTER -->
+<hr class="h-line"/>
+
+<div class="section-wrap">
+  <div class="section-bg-num">03</div>
+  <div id="tarifs" class="pricing-section">
+    <div class="section-header">
+      <div class="section-num">— 03</div>
+      <div class="section-title">Un investissement<br/>qui se rembourse</div>
+      <p class="section-sub">Sans engagement · Déploiement en 48h · Support inclus. Un chantier manqué coûte plus cher.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <div class="price-card reveal reveal-delay-1">
+        <div class="price-plan">Essentiel</div>
+        <div class="price-amount">149€</div>
+        <div class="price-period">par mois</div>
+        <p class="price-tagline">Pour démarrer et ne plus jamais rater un appel client.</p>
+        <hr class="price-divider"/>
+        <ul class="price-features">
+          <li>Réception d'appels 24h/24, 7j/7</li>
+          <li>Accueil personnalisé à votre nom</li>
+          <li>Prise de messages structurés</li>
+          <li>Qualification urgence / non-urgence</li>
+          <li>Filtrage des démarcheurs</li>
+          <li>Compte-rendu par email</li>
+        </ul>
+        <a href="#contact" class="btn-outline">Commencer →</a>
+      </div>
+
+      <div class="price-card featured reveal reveal-delay-2">
+        <div class="price-badge">Le plus populaire</div>
+        <div class="price-plan">Pro</div>
+        <div class="price-amount">199€</div>
+        <div class="price-period">par mois</div>
+        <p class="price-tagline">La solution complète pour tout automatiser.</p>
+        <hr class="price-divider"/>
+        <ul class="price-features">
+          <li>Tout le plan Essentiel</li>
+          <li>Prise de RDV automatique</li>
+          <li>Synchronisation Google Calendar</li>
+          <li>Consignes de sécurité urgences</li>
+          <li>Fiches dans Google Drive</li>
+          <li>Rappels auto email + notification</li>
+        </ul>
+        <a href="#contact" class="btn-gold-full">Commencer →</a>
+      </div>
+
+      <div class="price-card reveal reveal-delay-3">
+        <div class="price-plan">Premium</div>
+        <div class="price-amount">299€</div>
+        <div class="price-period">par mois</div>
+        <p class="price-tagline">Pour les PME qui veulent une intégration totale.</p>
+        <hr class="price-divider"/>
+        <ul class="price-features">
+          <li>Tout le plan Pro</li>
+          <li>Intégration CRM sur mesure</li>
+          <li>SMS de confirmation client</li>
+          <li>Rapports hebdo d'activité</li>
+          <li>Personnalisation avancée du script</li>
+          <li>Support prioritaire dédié</li>
+        </ul>
+        <a href="#contact" class="btn-outline">Commencer →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="h-line"/>
+
+<div class="section-wrap">
+  <div class="section-bg-num">04</div>
+  <div id="contact" class="contact-section">
+    <div class="contact-inner">
+      <div>
+        <div class="section-num">— 04</div>
+        <div class="section-title">Prêt à ne plus<br/>rater un appel ?</div>
+        <p class="section-sub" style="margin-top:.8rem">Laissez vos coordonnées. Nous vous contactons sous 24h pour une démo personnalisée gratuite.</p>
+        <div class="contact-aside">
+          <div class="aside-block">
+            <div class="aside-label">Déploiement</div>
+            <div class="aside-val">48 heures</div>
+          </div>
+          <div class="aside-block">
+            <div class="aside-label">Sans engagement</div>
+            <div class="aside-val">Résiliation à tout moment</div>
+          </div>
+          <div class="aside-block">
+            <div class="aside-label">Support</div>
+            <div class="aside-val">Inclus tous plans</div>
+          </div>
+          <div class="aside-block">
+            <div class="aside-label">Site</div>
+            <div class="aside-val"><a href="https://venusweb.fr" style="color:var(--gold)">venusweb.fr</a></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <form class="contact-form" id="contactForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="prenom">Prénom</label>
+              <input type="text" id="prenom" placeholder="Jean" required/>
+            </div>
+            <div class="form-group">
+              <label for="nom">Nom</label>
+              <input type="text" id="nom" placeholder="Dupont" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="metier">Votre métier</label>
+            <select id="metier">
+              <option value="">— Sélectionnez votre activité</option>
+              <option>Plombier / Chauffagiste</option>
+              <option>Électricien</option>
+              <option>Menuisier / Charpentier</option>
+              <option>Peintre / Décorateur</option>
+              <option>Maçon / Carreleur</option>
+              <option>Serrurier</option>
+              <option>Paysagiste</option>
+              <option>Autre artisan</option>
+              <option>PME / Commerce</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="jean@entreprise.fr" required/>
+            </div>
+            <div class="form-group">
+              <label for="tel">Téléphone</label>
+              <input type="tel" id="tel" placeholder="06 12 34 56 78"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" placeholder="Parlez-nous de votre activité..."></textarea>
+          </div>
+          <button type="submit" class="form-submit">
+            <span>Demander ma démo gratuite</span>
+            <span>→</span>
+          </button>
+        </form>
+        <div id="form-success">Merci — nous vous contactons sous 24h.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <footer>
   <p>© 2026 <strong>Assistant Téléphonique</strong> — <a href="https://venusweb.fr">venusweb.fr</a></p>
   <p>Propulsé par ElevenLabs AI · Google Calendar · Google Drive</p>
@@ -1009,6 +1227,102 @@ document.getElementById('contactForm').addEventListener('submit', function(e){
   this.style.display = 'none';
   document.getElementById('form-success').style.display = 'block';
 });
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Assistant Téléphonique IA — Sophie",
+      "url": "https://venusweb.fr/",
+      "description": "Assistante téléphonique IA disponible 24h/24 7j/7 pour artisans et PME. Prise de rendez-vous automatique, gestion des urgences, compte-rendu instantané dans Google Drive.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Cloud",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Essentiel",
+          "price": "149",
+          "priceCurrency": "EUR",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "149",
+            "priceCurrency": "EUR",
+            "unitText": "mois"
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Pro",
+          "price": "199",
+          "priceCurrency": "EUR",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "199",
+            "priceCurrency": "EUR",
+            "unitText": "mois"
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Premium",
+          "price": "299",
+          "priceCurrency": "EUR",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "299",
+            "priceCurrency": "EUR",
+            "unitText": "mois"
+          }
+        }
+      ],
+      "provider": {
+        "@type": "Organization",
+        "name": "venusweb.fr",
+        "url": "https://venusweb.fr/"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Combien de temps faut-il pour déployer l'assistant ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Le déploiement se fait en 48 heures. Aucune installation matérielle n'est requise."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "L'assistant fonctionne-t-il en dehors des heures de bureau ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oui, Sophie est disponible 24h/24, 7j/7, y compris les week-ends et jours fériés."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Y a-t-il un engagement de durée ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Non, tous nos plans sont sans engagement. Vous pouvez résilier à tout moment."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quels types d'entreprises peuvent utiliser Sophie ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sophie est conçue pour les artisans (plombiers, électriciens, menuisiers, peintres…) et les PME qui reçoivent des appels clients réguliers."
+          }
+        }
+      ]
+    }
+  ]
+}
 </script>
 </body>
 </html>
