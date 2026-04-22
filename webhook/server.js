@@ -6,10 +6,19 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
+const CALENDAR_ID     = process.env.GOOGLE_CALENDAR_ID || 'primary';
+const TIMEZONE        = process.env.TIMEZONE || 'Europe/Paris';
+const CALENDAR_COLORS = { URGENT: '11', MOYEN: '5', FAIBLE: '2' };
+const AFTERNOON_SLOTS = new Set(['après-midi', 'apres-midi', 'pm']);
+
+if (!process.env.ELEVENLABS_WEBHOOK_SECRET) {
+  console.warn('⚠️  ELEVENLABS_WEBHOOK_SECRET non défini — vérification signature désactivée');
+}
+
 // ─────────────────────────────────────────────
-// Auth Google Calendar via Service Account
+// Calendar client singleton
 // ─────────────────────────────────────────────
-function getCalendarClient() {
+function createCalendarClient() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
       type: 'service_account',
@@ -23,13 +32,14 @@ function getCalendarClient() {
   });
   return google.calendar({ version: 'v3', auth });
 }
+const calendar = createCalendarClient();
 
 // ─────────────────────────────────────────────
 // Vérification signature ElevenLabs (sécurité)
 // ─────────────────────────────────────────────
 function verifyElevenLabsSignature(req) {
   const secret = process.env.ELEVENLABS_WEBHOOK_SECRET;
-  if (!secret) return true; // désactivé si pas de secret configuré
+  if (!secret) return true;
 
   const signature = req.headers['elevenlabs-signature'];
   if (!signature) return false;
@@ -44,19 +54,17 @@ function verifyElevenLabsSignature(req) {
 // Parser les données reçues depuis l'agent
 // ─────────────────────────────────────────────
 function parseAppointmentData(body) {
-  // ElevenLabs envoie les paramètres de l'outil dans body.parameters
   const params = body.parameters || body;
-
   return {
-    clientName:   params.client_name   || params.clientName   || 'Client inconnu',
-    clientPhone:  params.client_phone  || params.clientPhone  || '',
-    clientAddress:params.client_address|| params.clientAddress|| '',
-    serviceType:  params.service_type  || params.serviceType  || 'Intervention',
-    dateStr:      params.date          || '',          // ex: "2026-04-20"
-    timeSlot:     params.time_slot     || params.timeSlot || 'matin', // "matin" | "après-midi"
-    startTime:    params.start_time    || params.startTime || '',    // ex: "09:00"
-    urgency:      params.urgency       || 'FAIBLE',
-    notes:        params.notes         || '',
+    clientName:    params.client_name    || params.clientName    || 'Client inconnu',
+    clientPhone:   params.client_phone   || params.clientPhone   || '',
+    clientAddress: params.client_address || params.clientAddress || '',
+    serviceType:   params.service_type   || params.serviceType   || 'Intervention',
+    dateStr:       params.date           || '',
+    timeSlot:      params.time_slot      || params.timeSlot      || 'matin',
+    startTime:     params.start_time     || params.startTime     || '',
+    urgency:       params.urgency        || 'FAIBLE',
+    notes:         params.notes          || '',
   };
 }
 
@@ -64,7 +72,6 @@ function parseAppointmentData(body) {
 // Calcule start/end datetime selon créneau
 // ─────────────────────────────────────────────
 function buildDateTimes(dateStr, timeSlot, startTime) {
-  // Si date non fournie → prend demain
   let date = dateStr;
   if (!date) {
     const tomorrow = new Date();
@@ -75,23 +82,22 @@ function buildDateTimes(dateStr, timeSlot, startTime) {
   let startHour, endHour;
 
   if (startTime) {
-    const [h, m] = startTime.split(':').map(Number);
-    startHour = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-    endHour   = `${String(h + 1).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-  } else if (timeSlot === 'après-midi' || timeSlot === 'apres-midi' || timeSlot === 'pm') {
+    const base = new Date(`2000-01-01T${startTime}:00`);
+    const end  = new Date(base.getTime() + 60 * 60 * 1000);
+    const fmt  = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    startHour  = fmt(base);
+    endHour    = fmt(end);
+  } else if (AFTERNOON_SLOTS.has(timeSlot)) {
     startHour = '13:00';
     endHour   = '14:00';
   } else {
-    // matin par défaut
     startHour = '08:00';
     endHour   = '09:00';
   }
 
-  const timeZone = process.env.TIMEZONE || 'Europe/Paris';
-
   return {
-    start: { dateTime: `${date}T${startHour}:00`, timeZone },
-    end:   { dateTime: `${date}T${endHour}:00`,   timeZone },
+    start: { dateTime: `${date}T${startHour}:00`, timeZone: TIMEZONE },
+    end:   { dateTime: `${date}T${endHour}:00`,   timeZone: TIMEZONE },
   };
 }
 
@@ -99,11 +105,7 @@ function buildDateTimes(dateStr, timeSlot, startTime) {
 // Couleur selon urgence
 // ─────────────────────────────────────────────
 function getColorId(urgency) {
-  switch (urgency?.toUpperCase()) {
-    case 'URGENT': return '11'; // rouge tomate
-    case 'MOYEN':  return '5';  // jaune banane
-    default:       return '2';  // vert sauge (FAIBLE)
-  }
+  return CALENDAR_COLORS[urgency?.toUpperCase()] || CALENDAR_COLORS.FAIBLE;
 }
 
 // ─────────────────────────────────────────────
@@ -112,7 +114,6 @@ function getColorId(urgency) {
 app.post('/webhook/create-event', async (req, res) => {
   console.log('📞 Webhook reçu:', JSON.stringify(req.body, null, 2));
 
-  // Vérification sécurité
   if (!verifyElevenLabsSignature(req)) {
     console.warn('⚠️  Signature invalide');
     return res.status(401).json({ error: 'Unauthorized' });
@@ -122,7 +123,6 @@ app.post('/webhook/create-event', async (req, res) => {
     const data = parseAppointmentData(req.body);
     const { start, end } = buildDateTimes(data.dateStr, data.timeSlot, data.startTime);
 
-    // Construction de la description riche
     const description = [
       `👤 Client : ${data.clientName}`,
       `📞 Téléphone : ${data.clientPhone}`,
@@ -132,7 +132,7 @@ app.post('/webhook/create-event', async (req, res) => {
       data.notes ? `📝 Notes : ${data.notes}` : '',
       ``,
       `─── Créé automatiquement par AssistantPro ───`,
-      `📅 Appel reçu le : ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}`,
+      `📅 Appel reçu le : ${new Date().toLocaleString('fr-FR', { timeZone: TIMEZONE })}`,
     ].filter(Boolean).join('\n');
 
     const event = {
@@ -146,22 +146,18 @@ app.post('/webhook/create-event', async (req, res) => {
         useDefault: false,
         overrides: [
           { method: 'popup',  minutes: 60 },
-          { method: 'email',  minutes: 1440 }, // veille
+          { method: 'email',  minutes: 1440 },
         ],
       },
     };
 
-    const calendar = getCalendarClient();
-    const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
-
     const response = await calendar.events.insert({
-      calendarId,
+      calendarId: CALENDAR_ID,
       resource: event,
     });
 
     console.log('✅ Événement créé:', response.data.htmlLink);
 
-    // Réponse au format attendu par ElevenLabs
     return res.status(200).json({
       success: true,
       event_id:   response.data.id,
@@ -171,10 +167,7 @@ app.post('/webhook/create-event', async (req, res) => {
 
   } catch (err) {
     console.error('❌ Erreur création événement:', err.message);
-    return res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -183,28 +176,30 @@ app.post('/webhook/create-event', async (req, res) => {
 // ─────────────────────────────────────────────
 app.get('/webhook/today-events', async (req, res) => {
   try {
-    const calendar = getCalendarClient();
     const now = new Date();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59);
+    endOfDay.setHours(23, 59, 59, 999);
 
     const response = await calendar.events.list({
-      calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
-      timeMin: now.toISOString(),
+      calendarId: CALENDAR_ID,
+      timeMin: startOfDay.toISOString(),
       timeMax: endOfDay.toISOString(),
       singleEvents: true,
       orderBy: 'startTime',
+      fields: 'items(id,summary,start,end,location)',
     });
 
     const events = (response.data.items || []).map(e => ({
-      id:      e.id,
-      title:   e.summary,
-      start:   e.start?.dateTime || e.start?.date,
-      end:     e.end?.dateTime   || e.end?.date,
-      location:e.location,
+      id:       e.id,
+      title:    e.summary,
+      start:    e.start?.dateTime || e.start?.date,
+      end:      e.end?.dateTime   || e.end?.date,
+      location: e.location,
     }));
 
-    return res.json({ success: true, count: events.length, events });
+    return res.json({ success: true, events });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }

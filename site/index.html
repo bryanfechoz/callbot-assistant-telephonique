@@ -470,14 +470,104 @@ footer p{
 }
 footer a{color:var(--gold);text-decoration:none}
 
+/* ── SCROLL REVEAL ── */
+.reveal{
+  opacity:0;
+  transform:translateY(32px);
+  transition:opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1);
+}
+.reveal.visible{opacity:1;transform:none}
+.reveal-delay-1{transition-delay:.08s}
+.reveal-delay-2{transition-delay:.16s}
+.reveal-delay-3{transition-delay:.24s}
+.reveal-delay-4{transition-delay:.32s}
+.reveal-delay-5{transition-delay:.40s}
+.reveal-delay-6{transition-delay:.48s}
+
+/* ── NAV SCROLL ── */
+nav.scrolled{
+  padding-top:.9rem;padding-bottom:.9rem;
+  background:rgba(13,13,13,0.98);
+}
+
+/* ── HAMBURGER ── */
+.hamburger{
+  display:none;
+  flex-direction:column;gap:5px;
+  background:none;border:none;cursor:pointer;padding:.4rem;
+}
+.hamburger span{
+  display:block;width:22px;height:1px;
+  background:var(--cream);
+  transition:transform .3s, opacity .3s;
+}
+.hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+.mobile-menu{
+  display:none;
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(13,13,13,0.98);
+  z-index:99;
+  flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2.5rem;
+}
+.mobile-menu.open{display:flex}
+.mobile-menu a{
+  font-family:'Big Shoulders Display',sans-serif;
+  font-weight:700;font-size:2rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cream);text-decoration:none;
+  transition:color .2s;
+}
+.mobile-menu a:hover{color:var(--gold)}
+
+/* ── METRIC COUNTER ── */
+.metric-num[data-target]{display:inline-block}
+
+/* ── CARD HOVER LIFT ── */
+.feat-card,.price-card,.demo-panel{
+  transition:border-color .25s, background .25s, transform .25s, box-shadow .25s;
+}
+.feat-card:hover,.demo-panel:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(184,149,42,.08);
+}
+.price-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(184,149,42,.12);
+}
+
+/* ── BUTTON RIPPLE ── */
+.btn-gold,.btn-ghost,.btn-outline,.btn-gold-full,.nav-btn{
+  position:relative;overflow:hidden;
+}
+.btn-gold::after,.btn-ghost::after,.btn-outline::after,.btn-gold-full::after,.nav-btn::after{
+  content:'';
+  position:absolute;inset:0;
+  background:rgba(255,255,255,.08);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.btn-gold:hover::after,.btn-ghost:hover::after,.btn-outline:hover::after,.btn-gold-full:hover::after,.nav-btn:hover::after{
+  transform:scaleX(1);
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   nav{padding:1.2rem 1.5rem}
   .nav-links{display:none}
+  .hamburger{display:flex}
+  nav.scrolled{padding-top:.8rem;padding-bottom:.8rem}
   .hero{padding:8rem 1.5rem 4rem}
+  .hero h1{font-size:clamp(3rem,12vw,5rem)}
   .hero-inner,.demo-grid,.features-grid,.pricing-grid,.contact-inner{grid-template-columns:1fr}
   .demo-section,.features-section,.pricing-section,.contact-section{padding:4rem 1.5rem}
   .form-row{grid-template-columns:1fr}
+  .metric-num{font-size:2.8rem}
+  .section-title{font-size:clamp(2rem,8vw,3rem)}
 }
 </style>
 </head>
@@ -486,8 +576,16 @@ footer a{color:var(--gold);text-decoration:none}
 <!-- Canvas ondes de fond -->
 <canvas id="waves-canvas"></canvas>
 
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#demo" onclick="closeMobile()">Démo</a>
+  <a href="#fonctionnalites" onclick="closeMobile()">Fonctionnalités</a>
+  <a href="#tarifs" onclick="closeMobile()">Tarifs</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+</div>
+
 <!-- NAV -->
-<nav>
+<nav id="mainNav">
   <div class="logo">assistant<span>téléphonique</span></div>
   <div class="nav-links">
     <a href="#demo">Démo</a>
@@ -496,6 +594,9 @@ footer a{color:var(--gold);text-decoration:none}
     <a href="#contact">Contact</a>
   </div>
   <a href="#contact" class="nav-btn">Demander une démo</a>
+  <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobile()">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <!-- HERO -->
@@ -514,21 +615,21 @@ footer a{color:var(--gold);text-decoration:none}
       </div>
       <p class="hero-note">Appel gratuit · Aucune installation · Résultats immédiats</p>
     </div>
-    <div class="hero-metrics">
-      <div class="metric-row">
-        <div class="metric-num">24/7</div>
+    <div class="hero-metrics reveal">
+      <div class="metric-row reveal reveal-delay-1">
+        <div class="metric-num" data-target="24" data-suffix="/7">24/7</div>
         <div class="metric-label">Disponibilité<br/>totale</div>
       </div>
-      <div class="metric-row">
-        <div class="metric-num">8–12</div>
+      <div class="metric-row reveal reveal-delay-2">
+        <div class="metric-num" data-target="12" data-prefix="8–">8–12</div>
         <div class="metric-label">Appels manqués<br/>par jour en moyenne</div>
       </div>
-      <div class="metric-row">
-        <div class="metric-num">48h</div>
+      <div class="metric-row reveal reveal-delay-3">
+        <div class="metric-num" data-target="48" data-suffix="h">48h</div>
         <div class="metric-label">Délai de<br/>déploiement</div>
       </div>
-      <div class="metric-row">
-        <div class="metric-num">0€</div>
+      <div class="metric-row reveal reveal-delay-4">
+        <div class="metric-num" data-target="0" data-suffix="€">0€</div>
         <div class="metric-label">Frais de<br/>mise en place</div>
       </div>
     </div>
@@ -585,47 +686,47 @@ footer a{color:var(--gold);text-decoration:none}
     <p class="section-sub">Chacune répond à un problème réel rencontré quotidiennement par les artisans et PME.</p>
   </div>
   <div class="features-grid">
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-1">
       <div class="feat-num">01</div>
       <div class="feat-title">Accueil &amp; Qualification</div>
       <p class="feat-desc">Répond en votre nom, identifie le motif et le niveau d'urgence dès les premières secondes.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-2">
       <div class="feat-num">02</div>
       <div class="feat-title">Collecte client</div>
       <p class="feat-desc">Nom, téléphone confirmé à l'oral, adresse, nature exacte de la demande. Rien ne se perd.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-3">
       <div class="feat-num">03</div>
       <div class="feat-title">Gestion des urgences</div>
       <p class="feat-desc">Détecte les situations critiques, donne les consignes de sécurité et alerte en priorité absolue.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-4">
       <div class="feat-num">04</div>
       <div class="feat-title">Prise de rendez-vous</div>
       <p class="feat-desc">Propose des créneaux, confirme à l'oral et crée l'événement automatiquement dans Google Calendar.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-5">
       <div class="feat-num">05</div>
       <div class="feat-title">Compte-rendu auto</div>
       <p class="feat-desc">Chaque appel génère une fiche structurée sauvegardée dans Google Drive. Zéro saisie manuelle.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-6">
       <div class="feat-num">06</div>
       <div class="feat-title">FAQ intelligente</div>
       <p class="feat-desc">Répond aux questions courantes : zones d'intervention, tarifs indicatifs, délais, disponibilités week-end.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-1">
       <div class="feat-num">07</div>
       <div class="feat-title">Suivi clients</div>
       <p class="feat-desc">Gère les demandes de suivi de chantier et les réclamations avec la même rigueur professionnelle.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-2">
       <div class="feat-num">08</div>
       <div class="feat-title">Filtre anti-démarcheurs</div>
       <p class="feat-desc">Identifie et écarte poliment les appels commerciaux. Votre temps n'est consacré qu'à vos vrais clients.</p>
     </div>
-    <div class="feat-card">
+    <div class="feat-card reveal reveal-delay-3">
       <div class="feat-num">09</div>
       <div class="feat-title">Clôture pro</div>
       <p class="feat-desc">Récapitulatif systématique, engagement sur la suite. Vos clients raccrochent rassurés et confiants.</p>
@@ -644,7 +745,7 @@ footer a{color:var(--gold);text-decoration:none}
   </div>
   <div class="pricing-grid">
 
-    <div class="price-card">
+    <div class="price-card reveal reveal-delay-1">
       <div class="price-plan">Essentiel</div>
       <div class="price-amount">149€</div>
       <div class="price-period">par mois</div>
@@ -661,7 +762,7 @@ footer a{color:var(--gold);text-decoration:none}
       <a href="#contact" class="btn-outline">Commencer →</a>
     </div>
 
-    <div class="price-card featured">
+    <div class="price-card featured reveal reveal-delay-2">
       <div class="price-badge">Le plus populaire</div>
       <div class="price-plan">Pro</div>
       <div class="price-amount">199€</div>
@@ -679,7 +780,7 @@ footer a{color:var(--gold);text-decoration:none}
       <a href="#contact" class="btn-gold-full">Commencer →</a>
     </div>
 
-    <div class="price-card">
+    <div class="price-card reveal reveal-delay-3">
       <div class="price-plan">Premium</div>
       <div class="price-amount">299€</div>
       <div class="price-period">par mois</div>
@@ -784,11 +885,12 @@ footer a{color:var(--gold);text-decoration:none}
 </footer>
 
 <script>
-/* ── Canvas ondes concentriques animées ── */
+/* ── Canvas ondes — réactif à la souris ── */
 (function(){
   const canvas = document.getElementById('waves-canvas');
   const ctx = canvas.getContext('2d');
   let W, H, t = 0;
+  let mouse = { x: null, y: null };
 
   function resize(){
     W = canvas.width  = window.innerWidth;
@@ -796,13 +898,18 @@ footer a{color:var(--gold);text-decoration:none}
   }
   resize();
   window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
 
   const GOLD = [184, 149, 42];
-  const cx = W * 0.18, cy = H * 0.5;
 
   function draw(){
     ctx.clearRect(0, 0, W, H);
     const now = t * 0.0008;
+
+    const baseCx = W * 0.18, baseCy = H * 0.5;
+    const cx = mouse.x !== null ? baseCx + (mouse.x - baseCx) * 0.04 : baseCx;
+    const cy = mouse.y !== null ? baseCy + (mouse.y - baseCy) * 0.04 : baseCy;
 
     for(let i = 1; i <= 28; i++){
       const r = i * 58 + Math.sin(now + i * 0.3) * 4;
@@ -814,7 +921,6 @@ footer a{color:var(--gold);text-decoration:none}
       ctx.stroke();
     }
 
-    // Arc accent
     const rA = 220 + Math.sin(now * 0.4) * 8;
     ctx.beginPath();
     ctx.arc(cx, cy, rA, -0.6, Math.PI * 1.2);
@@ -822,7 +928,6 @@ footer a{color:var(--gold);text-decoration:none}
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Point central pulsant
     const pr = 4 + Math.sin(now * 2) * 1.5;
     ctx.beginPath();
     ctx.arc(cx, cy, pr, 0, Math.PI * 2);
@@ -833,6 +938,69 @@ footer a{color:var(--gold);text-decoration:none}
     requestAnimationFrame(draw);
   }
   draw();
+})();
+
+/* ── Nav compacte au scroll ── */
+(function(){
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+})();
+
+/* ── Hamburger mobile ── */
+function toggleMobile(){
+  const btn = document.getElementById('hamburger');
+  const menu = document.getElementById('mobileMenu');
+  btn.classList.toggle('open');
+  menu.classList.toggle('open');
+  document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+}
+function closeMobile(){
+  document.getElementById('hamburger').classList.remove('open');
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ── Scroll reveal (Intersection Observer) ── */
+(function(){
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+})();
+
+/* ── Compteurs animés ── */
+(function(){
+  function animateCounter(el){
+    const target = parseInt(el.dataset.target, 10);
+    const suffix = el.dataset.suffix || '';
+    const prefix = el.dataset.prefix || '';
+    if(isNaN(target)) return;
+    const duration = 1200;
+    const start = performance.now();
+    function step(now){
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(ease * target);
+      el.textContent = prefix + value + suffix;
+      if(progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        animateCounter(e.target);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.metric-num[data-target]').forEach(el => obs.observe(el));
 })();
 
 /* ── Formulaire ── */
